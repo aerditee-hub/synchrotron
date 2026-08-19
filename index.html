@@ -223,7 +223,7 @@
                 <div class="browser-toolbar">
                     <button class="btn" onclick="browserBack()">Back</button>
                     <span style="font-size: 12px;">Address:</span>
-                    <input type="text" class="browser-url" id="browser-url" placeholder="http://www.google.com" onkeydown="if(event.key==='Enter') navigateBrowser()">
+                    <input type="text" class="browser-url" id="browser-url" placeholder="://www.google.com" onkeydown="if(event.key==='Enter') navigateBrowser()">
                     <button class="btn" onclick="navigateBrowser()">Go</button>
                 </div>
                 <div class="content-area" id="browser-content-area" style="padding: 0; display: flex; flex-direction: column; position: relative;"></div>
@@ -344,7 +344,7 @@
         <!-- TASKBAR -->
         <div class="taskbar">
             <div class="start-button" id="start-btn" onclick="toggleStart()">
-                <svg class="start-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <svg class="start-logo" viewBox="0 0 100 100" xmlns="://www.w3.org/2000/svg">
                     <path d="M 0 15 L 45 5 L 45 45 L 0 45 Z" fill="#f05025"/>
                     <path d="M 50 4 L 100 0 L 100 45 L 50 45 Z" fill="#7ebc13"/>
                     <path d="M 0 50 L 45 50 L 45 95 L 0 85 Z" fill="#00a3e8"/>
@@ -378,8 +378,8 @@
     --------------------------------------------------------- */
     const customApps = [
        
-        { id: 'wikipedia', name: 'Wikipedia', icon: '📚', url: 'https://www.wikipedia.org' },
-        { id: 'Google AI', name: 'Google AI', icon: '⚛️', url: 'https://www.google.com/search?igu=1&udm=50&q=' }
+        { id: 'wikipedia', name: 'Wikipedia', icon: '📚', url: 's://www.wikipedia.org' },
+        { id: 'Google AI', name: 'Google AI', icon: '⚛️', url: 's://www.google.com/search?igu=1&udm=50&q=' }
         
     ];
     /* ---------------------------------------------------------
@@ -647,7 +647,7 @@
     }
 
     // Paste the destination URL between the quotes below (e.g. "https://your-game-site.com/level2")
-    const SHUTDOWN_REDIRECT_URL = "";
+    const SHUTDOWN_REDIRECT_URL = "https://aerditee-hub.github.io/Accelerators--Floor1/";
 
     function shutdownSystem() {
         toggleStart(false);
