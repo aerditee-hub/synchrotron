@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retro OS Desktop - Extended Edition</title>
+<style>
+    /* ---------------------------------------------------------
+       RETRO WINDOWS 95/98 CSS THEME
+    --------------------------------------------------------- */
+    body {
+        margin: 0; height: 100vh; background-color: #000;
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'MS Sans Serif', Tahoma, Verdana, sans-serif;
+        user-select: none; overflow: hidden;
+    }
+
+    .monitor-bezel {
+        width: 100vw; height: 100vh; background-color: #e4e4d9;
+        box-sizing: border-box; padding: 30px;
+        box-shadow: inset 4px 4px 10px rgba(255,255,255,0.8), inset -6px -6px 15px rgba(0,0,0,0.3);
+        border-radius: 10px;
+    }
+
+    .desktop {
+        width: 100%; height: 100%; position: relative;
+        background-color: #008080; box-shadow: inset 2px 2px 8px rgba(0,0,0,0.8);
+        overflow: hidden; transition: background-color 0.2s;
+    }
+
+    /* Desktop Icons */
+    .icon-container {
+        display: flex; flex-direction: column; gap: 20px;
+        padding: 20px; flex-wrap: wrap; height: calc(100% - 60px);
+        align-content: flex-start;
+    }
+    .icon { width: 76px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+    .icon-img { font-size: 40px; text-shadow: 2px 2px 0px rgba(0,0,0,0.5); margin-bottom: 5px; }
+    .icon-text { color: white; padding: 2px 4px; font-size: 12px; text-align: center; border: 1px dotted transparent; text-shadow: 1px 1px 2px #000; }
+    .icon:hover .icon-text, .icon:active .icon-text { background: #000080; border: 1px dotted #ffffff; }
+
+    /* Standard Windows */
+    .window {
+        position: absolute; background: #c0c0c0;
+        border: 2px solid; border-color: #dfdfdf #0a0a0a #0a0a0a #dfdfdf;
+        display: flex; flex-direction: column; box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+    }
+    .hidden { display: none !important; }
+    .maximized { top: 0 !important; left: 0 !important; width: 100% !important; height: calc(100% - 32px) !important; border: none; }
+
+    .title-bar {
+        background: #000080; color: white; padding: 4px 6px;
+        display: flex; justify-content: space-between; align-items: center;
+        font-weight: bold; font-size: 14px; cursor: default;
+    }
+    .title-bar.inactive { background: #808080; }
+
+    .title-bar-controls button {
+        background: #c0c0c0; border: 2px solid; border-color: #dfdfdf #0a0a0a #0a0a0a #dfdfdf;
+        font-weight: bold; font-size: 12px; cursor: pointer; padding: 1px 5px; color: black;
+    }
+    .title-bar-controls button:active { border-color: #0a0a0a #dfdfdf #dfdfdf #0a0a0a; }
+
+    .window-body { padding: 8px; flex: 1; display: flex; flex-direction: column; gap: 10px; height: calc(100% - 30px); box-sizing: border-box; }
+
+    .btn {
+        background: #c0c0c0; border: 2px solid; border-color: #dfdfdf #0a0a0a #0a0a0a #dfdfdf;
+        padding: 4px 12px; cursor: pointer; display: inline-block; font-size: 13px; color: black;
+    }
+    .btn:active { border-color: #0a0a0a #dfdfdf #dfdfdf #0a0a0a; }
+
+    .content-area {
+        background: #ffffff; flex: 1; border: 2px solid;
+        border-color: #0a0a0a #dfdfdf #dfdfdf #0a0a0a; overflow-y: auto; padding: 15px;
+    }
+
+    /* Media Grids */
+    .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+    .media-item {
+        display: flex; flex-direction: column; gap: 8px; background: #c0c0c0;
+        padding: 8px; border: 2px solid; border-color: #dfdfdf #0a0a0a #0a0a0a #dfdfdf; cursor: pointer;
+    }
+    .browser-frame-wrap {
+        flex: 1; width: 100%; position: relative; overflow: hidden; background: #fff;
+        display: none;
+    }
+    .browser-frame-wrap iframe {
+        position: absolute; left: 0; width: 100%; border: none;
+        top: 0; height: 100%;
+    }
+    /* Crops out Google's top row (All / Images / Videos / News / Sign in, etc.) */
+    .browser-frame-wrap.crop-google iframe {
+        top: -112px; height: calc(100% + 160px);
+    }
+
+    .media-item video, .media-item img, .media-item iframe {
+        width: 100%; height: 140px; object-fit: cover; background: #ffffff;
+        border: 2px solid; border-color: #0a0a0a #dfdfdf #dfdfdf #0a0a0a; box-sizing: border-box;
+    }
+    .media-name { font-size: 12px; color: black; text-align: center; font-weight: bold; }
+
+    /* Taskbar */
+    .taskbar {
+        position: absolute; bottom: 0; left: 0; width: 100%; height: 32px;
+        background: #c0c0c0; border-top: 2px solid #dfdfdf; display: flex; align-items: center; padding: 2px; box-sizing: border-box; z-index: 9999;
+    }
+    .start-button {
+        display: flex; align-items: center; gap: 4px; background: #c0c0c0;
+        border: 2px solid; border-color: #dfdfdf #0a0a0a #0a0a0a #dfdfdf;
+        padding: 2px 6px; font-weight: bold; font-size: 14px; cursor: pointer; height: 100%; box-sizing: border-box;
+    }
+    .start-button:active, .start-button.active { border-color: #0a0a0a #dfdfdf #dfdfdf #0a0a0a; padding: 3px 5px 1px 7px; background: #e0e0e0; }
+    .start-logo { width: 16px; height: 16px; }
+    .divider { width: 2px; height: 80%; background: #0a0a0a; border-right: 1px solid #dfdfdf; margin: 0 6px; }
+
+    .quick-launch { display: flex; gap: 4px; align-items: center; }
+    .ql-icon { font-size: 18px; cursor: pointer; padding: 2px; border: 1px solid transparent; }
+    .ql-icon:hover { border: 1px ridge #dfdfdf; }
+    .ql-icon:active { border: 1px groove #0a0a0a; }
+
+    .task-area { flex: 1; display: flex; gap: 4px; overflow: hidden; padding: 0 6px; }
+    .task-tab {
+        background: #c0c0c0; border: 2px solid; border-color: #dfdfdf #0a0a0a #0a0a0a #dfdfdf;
+        padding: 2px 8px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px;
+        cursor: pointer; width: 140px; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .task-tab.active {
+        border-color: #0a0a0a #dfdfdf #dfdfdf #0a0a0a; background: #e0e0e0;
+        background-image: repeating-linear-gradient(45deg, #dfdfdf 0, #dfdfdf 1px, #c0c0c0 1px, #c0c0c0 2px);
+    }
+    .sys-tray {
+        border: 2px solid; border-color: #0a0a0a #dfdfdf #dfdfdf #0a0a0a;
+        padding: 0 10px; display: flex; align-items: center; height: 100%; box-sizing: border-box; font-size: 12px; cursor: pointer;
+    }
+    .sys-tray:active { border-color: #dfdfdf #0a0a0a #0a0a0a #dfdfdf; }
+
+    /* Classic Start Menu */
+    .start-menu {
+        position: absolute; bottom: 32px; left: 0; width: 220px;
+        background: #c0c0c0; border: 2px solid; border-color: #dfdfdf #0a0a0a #0a0a0a #dfdfdf;
+        display: flex; z-index: 10000; box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    }
+    .start-sidebar {
+        background: #000080; width: 30px; display: flex; align-items: flex-end; justify-content: flex-start;
+        padding-bottom: 10px; color: white; font-weight: bold; font-size: 16px;
+    }
+    .start-sidebar span { writing-mode: vertical-rl; transform: rotate(180deg); }
+    .start-items { flex: 1; padding: 4px; display: flex; flex-direction: column; }
+    .start-item {
+        padding: 8px; font-size: 13px; display: flex; align-items: center; gap: 10px; cursor: pointer;
+    }
+    .start-item:hover { background: #000080; color: white; }
+    .start-divider { height: 1px; background: #808080; border-bottom: 1px solid #fff; margin: 4px 0; }
+
+    /* Yellow Tooltips */
+    .retro-tooltip {
+        position: absolute; bottom: 36px; background: #ffffe1; border: 1px solid #000;
+        padding: 4px; font-size: 11px; z-index: 100005; box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+        color: #000; pointer-events: none;
+    }
+
+    /* Specific Window Stylings */
+    #win-calc { width: 280px; }
+    .calc-screen { background: #fff; border: 2px solid; border-color: #0a0a0a #dfdfdf #dfdfdf #0a0a0a; height: 40px; font-size: 24px; text-align: right; padding: 5px; margin-bottom: 10px; font-family: 'Courier New', monospace; overflow: hidden;}
+    .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; background:#c0c0c0;}
+    .calc-btn { font-size: 16px; padding: 10px 0; font-weight: bold; }
+
+    #win-clock { width: 300px; text-align: center; }
+    .clock-display { font-size: 40px; font-family: 'Courier New', monospace; font-weight: bold; padding: 20px; background: black; color: #00ff00; border: 2px solid; border-color: #0a0a0a #dfdfdf #dfdfdf #0a0a0a;}
+
+    #win-calendar { width: 320px; }
+    .cal-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; margin-bottom: 10px; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-size: 13px; }
+    .cal-day-name { background: #000080; color: white; padding: 2px 0; font-weight: bold; }
+    .cal-day { padding: 6px 0; border: 1px solid #dfdfdf; background: #fff; cursor: default;}
+    .cal-day.today { background: #000080; color: white; font-weight: bold; border-color: #000080; }
+
+    /* Retro Browser (Internet Explorer) */
+    .browser-toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+    .browser-url { flex: 1; border: 2px solid; border-color: #0a0a0a #dfdfdf #dfdfdf #0a0a0a; padding: 4px; font-family: inherit; font-size: 13px; }
+    .browser-tabs { display: flex; gap: 2px; border-bottom: 2px solid #dfdfdf; align-items: flex-end; }
+    .browser-tab { background: #c0c0c0; border: 2px solid; border-color: #dfdfdf #0a0a0a #c0c0c0 #dfdfdf; padding: 4px 10px; font-size: 12px; cursor: pointer; position: relative; top: 2px; }
+    .browser-tab.active { background: #c0c0c0; border-bottom-color: #c0c0c0; font-weight: bold; top: 2px; z-index: 10; padding-bottom: 6px; }
+    .add-tab-btn { background: #c0c0c0; border: 2px solid; border-color: #dfdfdf #0a0a0a #0a0a0a #dfdfdf; padding: 0 6px; font-weight: bold; cursor: pointer; height: 20px; margin-left: 4px; font-size: 12px; position: relative; top: -2px;}
+    .add-tab-btn:active { border-color: #0a0a0a #dfdfdf #dfdfdf #0a0a0a; }
+
+    /* Shutdown Screen */
+    .shutdown-screen {
+        position: fixed; inset: 0; background: black; z-index: 999999;
+        display: flex; align-items: center; justify-content: center; color: #ff8c00;
+        font-family: 'Courier New', Courier, monospace; font-size: 24px; text-align: center; font-weight: bold;
+    }
+
+</style>
+</head>
+<body>
+
+<div class="monitor-bezel" id="monitor-bezel">
+    <div class="desktop" id="desktop">
+
+        <!-- DESKTOP ICONS -->
+        <div class="icon-container" id="icon-container">
+            <div class="icon" ondblclick="appManager.open('browser')">
+                <div class="icon-img">🌐</div><div class="icon-text">Internet<br>Explorer</div>
+            </div>
+        </div>
+
+        <!-- DYNAMIC FOLDER & CUSTOM APP WINDOWS -->
+        <div id="folder-windows"></div>
+
+        <!-- WINDOW: RETRO BROWSER -->
+        <div class="window hidden" id="win-browser" style="top: 15%; left: 15%; width: 700px; height: 450px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Internet Explorer</div>
+                <div class="title-bar-controls">
+                    <button onclick="appManager.minimize('browser')">_</button>
+                    <button onclick="appManager.toggleMax('browser')">◻</button>
+                    <button onclick="appManager.close('browser')">X</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="browser-tabs" id="browser-tabs-container"></div>
+                <div class="browser-toolbar">
+                    <button class="btn" onclick="browserBack()">Back</button>
+                    <span style="font-size: 12px;">Address:</span>
+                    <input type="text" class="browser-url" id="browser-url" placeholder="http://www.google.com" onkeydown="if(event.key==='Enter') navigateBrowser()">
+                    <button class="btn" onclick="navigateBrowser()">Go</button>
+                </div>
+                <div class="content-area" id="browser-content-area" style="padding: 0; display: flex; flex-direction: column; position: relative;"></div>
+            </div>
+        </div>
+
+        <!-- WINDOW: ADVANCED CALCULATOR -->
+        <div class="window hidden" id="win-calc" style="top: 25%; left: 35%;">
+            <div class="title-bar">
+                <div class="title-bar-text">Calculator</div>
+                <div class="title-bar-controls">
+                    <button onclick="appManager.minimize('calc')">_</button>
+                    <button onclick="appManager.close('calc')">X</button>
+                </div>
+            </div>
+            <div class="window-body" style="background: #c0c0c0; border: none;">
+                <div class="calc-screen" id="calc-screen">0</div>
+                <div class="calc-grid">
+                    <button class="btn calc-btn" onclick="calcPress('(')">(</button>
+                    <button class="btn calc-btn" onclick="calcPress(')')">)</button>
+                    <button class="btn calc-btn" onclick="calcPress('C')">C</button>
+                    <button class="btn calc-btn" onclick="calcPress('/')">/</button>
+                    
+                    <button class="btn calc-btn" onclick="calcPress('7')">7</button>
+                    <button class="btn calc-btn" onclick="calcPress('8')">8</button>
+                    <button class="btn calc-btn" onclick="calcPress('9')">9</button>
+                    <button class="btn calc-btn" onclick="calcPress('*')">*</button>
+                    
+                    <button class="btn calc-btn" onclick="calcPress('4')">4</button>
+                    <button class="btn calc-btn" onclick="calcPress('5')">5</button>
+                    <button class="btn calc-btn" onclick="calcPress('6')">6</button>
+                    <button class="btn calc-btn" onclick="calcPress('-')">-</button>
+                    
+                    <button class="btn calc-btn" onclick="calcPress('1')">1</button>
+                    <button class="btn calc-btn" onclick="calcPress('2')">2</button>
+                    <button class="btn calc-btn" onclick="calcPress('3')">3</button>
+                    <button class="btn calc-btn" onclick="calcPress('+')">+</button>
+
+                    <button class="btn calc-btn" onclick="calcPress('0')" style="grid-column: span 2;">0</button>
+                    <button class="btn calc-btn" onclick="calcPress('.')">.</button>
+                    <button class="btn calc-btn" onclick="calcPress('=')">=</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- WINDOW: CLOCK -->
+        <div class="window hidden" id="win-clock" style="top: 30%; left: 40%;">
+            <div class="title-bar">
+                <div class="title-bar-text">Digital Clock</div>
+                <div class="title-bar-controls">
+                    <button onclick="appManager.minimize('clock')">_</button>
+                    <button onclick="appManager.close('clock')">X</button>
+                </div>
+            </div>
+            <div class="window-body" style="background: #c0c0c0; border: none;">
+                <div class="clock-display" id="large-clock">12:00:00 AM</div>
+            </div>
+        </div>
+
+        <!-- WINDOW: CALENDAR -->
+        <div class="window hidden" id="win-calendar" style="top: 20%; left: 50%;">
+            <div class="title-bar">
+                <div class="title-bar-text">Calendar</div>
+                <div class="title-bar-controls">
+                    <button onclick="appManager.minimize('calendar')">_</button>
+                    <button onclick="appManager.close('calendar')">X</button>
+                </div>
+            </div>
+            <div class="window-body" style="background: #c0c0c0; border: none;">
+                <div class="content-area" style="padding: 10px;">
+                    <div class="cal-header">
+                        <button class="btn" onclick="changeMonth(-1)">&lt;</button>
+                        <span id="cal-month-year">Month Year</span>
+                        <button class="btn" onclick="changeMonth(1)">&gt;</button>
+                    </div>
+                    <div class="cal-grid" id="cal-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WINDOW: DISPLAY PROPERTIES (QUICK SETTINGS) -->
+        <div class="window hidden" id="win-display" style="top: 10%; left: 10%; width: 350px;">
+            <div class="title-bar">
+                <div class="title-bar-text">Display Properties</div>
+                <div class="title-bar-controls">
+                    <button onclick="appManager.minimize('display')">_</button>
+                    <button onclick="appManager.close('display')">X</button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="content-area" style="background: #c0c0c0; border:none; padding:5px;">
+                    <p style="font-size: 13px; font-weight:bold;">Desktop Background:</p>
+                    <button class="btn" style="width:100%; margin-bottom:5px;" onclick="setWallpaper('background.png', true)">LandScape</button>
+                    <button class="btn" style="width:100%; margin-bottom:5px;" onclick="setWallpaper('#008080')">Windows Teal</button>
+                    <button class="btn" style="width:100%; margin-bottom:5px;" onclick="setWallpaper('#000080')">Navy Blue</button>
+                    <button class="btn" style="width:100%; margin-bottom:5px;" onclick="setWallpaper('#000000')">Solid Black</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- START MENU -->
+        <div class="start-menu hidden" id="start-menu">
+            <div class="start-sidebar"><span>Windows 95</span></div>
+            <div class="start-items" id="start-menu-items">
+                <div class="start-item" onclick="appManager.open('browser'); toggleStart(false);">🌐 Internet Explorer</div>
+                <div class="start-item" onclick="appManager.open('calc'); toggleStart(false);">🧮 Calculator</div>
+                <div class="start-item" onclick="appManager.open('calendar'); toggleStart(false);">📅 Calendar</div>
+                <div class="start-divider"></div>
+                <div class="start-item" onclick="appManager.open('display'); toggleStart(false);">⚙️ Display Settings</div>
+                <div class="start-divider"></div>
+                <div class="start-item" onclick="shutdownSystem()">⏻ Shut Down...</div>
+            </div>
+        </div>
+
+        <!-- RETRO TOOLTIP -->
+        <div class="retro-tooltip hidden" id="taskbar-tooltip">Preview Tooltip</div>
+
+        <!-- TASKBAR -->
+        <div class="taskbar">
+            <div class="start-button" id="start-btn" onclick="toggleStart()">
+                <svg class="start-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M 0 15 L 45 5 L 45 45 L 0 45 Z" fill="#f05025"/>
+                    <path d="M 50 4 L 100 0 L 100 45 L 50 45 Z" fill="#7ebc13"/>
+                    <path d="M 0 50 L 45 50 L 45 95 L 0 85 Z" fill="#00a3e8"/>
+                    <path d="M 50 50 L 100 50 L 100 100 L 50 96 Z" fill="#ffb400"/>
+                </svg>
+                Start
+            </div>
+            <div class="divider"></div>
+            
+            <div class="quick-launch">
+                <div class="ql-icon" onmouseenter="showTooltip('Calculator', this)" onmouseleave="hideTooltip()" onclick="appManager.open('calc')">🧮</div>
+                <div class="ql-icon" onmouseenter="showTooltip('Clock', this)" onmouseleave="hideTooltip()" onclick="appManager.open('clock')">🕒</div>
+                <div class="ql-icon" onmouseenter="showTooltip('Calendar', this)" onmouseleave="hideTooltip()" onclick="appManager.open('calendar')">📅</div>
+            </div>
+            <div class="divider"></div>
+            
+            <div class="task-area" id="task-area"></div>
+            <div class="sys-tray" onclick="appManager.open('display')" onmouseenter="showTooltip('Display Settings', this)" onmouseleave="hideTooltip()"><span id="sys-clock">12:00 AM</span></div>
+        </div>
+
+    </div>
+</div>
+
+<!-- SHUTDOWN SCREEN -->
+<div class="shutdown-screen hidden" id="shutdown-screen"></div>
+
+<script>
+    /* ---------------------------------------------------------
+       CUSTOM APPS CONFIGURATION
+       Add your custom links below to create new desktop apps!
+    --------------------------------------------------------- */
+    const customApps = [
+       
+        { id: 'wikipedia', name: 'Wikipedia', icon: '📚', url: 'https://www.wikipedia.org' },
+        { id: 'Google AI', name: 'Google AI', icon: '⚛️', url: 'https://www.google.com/search?igu=1&udm=50&q=' }
+        
+    ];
+    /* ---------------------------------------------------------
+       FOLDER & FILE CONFIGURATION
+    --------------------------------------------------------- */
+    const folderData = [
+        {
+            id: 'Synchrotrons', name: 'Synchrotrons', icon: '📁',
+            files: [ { name: 'Super Proton Synchrotron.mp4', src: 'Super_Proton_Synchrotron.mp4' },{ name: 'The Proton Synchrotron.mp4', src: 'The_Proton_Synchrotron.mp4' },{ name: 'PS Booster.mp4', src: 'Inside_the_PS_Booster.mp4' } ]
+        
+        },
+    ];
+
+    let zIndexCounter = 10;
+    
+    const apps = {
+        'browser':  { title: '🌐 Internet Explorer', open: false, min: false },
+        'calc':     { title: '🧮 Calculator', open: false, min: false },
+        'clock':    { title: '🕒 Clock', open: false, min: false },
+        'calendar': { title: '📅 Calendar', open: false, min: false },
+        'display':  { title: '⚙️ Settings', open: false, min: false }
+    };
+
+    function initDesktopApps() {
+        const iconContainer = document.getElementById('icon-container');
+        const windowsContainer = document.getElementById('folder-windows');
+        const startMenuItems = document.getElementById('start-menu-items');
+
+        // 1. Initialize Folders
+        folderData.forEach((folder, index) => {
+            apps[folder.id] = { title: `${folder.icon} ${folder.name}`, open: false, min: false };
+
+            const iconDiv = document.createElement('div');
+            iconDiv.className = 'icon';
+            iconDiv.setAttribute('ondblclick', `appManager.open('${folder.id}')`);
+            iconDiv.innerHTML = `<div class="icon-img">${folder.icon}</div><div class="icon-text">${folder.name}</div>`;
+            iconContainer.appendChild(iconDiv);
+
+            let mediaGridHtml = '';
+            folder.files.forEach(file => {
+                let mediaContent = '';
+                
+                // Check if the file has an mp4 source
+                if (file.src && file.src.endsWith('.mp4')) {
+                    // Render a video element with controls
+                    mediaContent = `<video src="${file.src}" controls></video>`;
+                } else {
+                    // Fallback to the default document icon
+                    mediaContent = `<div style="display:flex;align-items:center;justify-content:center;height:140px;background:#fff;border:2px solid;border-color:#0a0a0a #dfdfdf #dfdfdf #0a0a0a;">📄</div>`;
+                }
+
+                mediaGridHtml += `
+                    <div class="media-item">
+                        ${mediaContent}
+                        <div class="media-name">${file.name}</div>
+                    </div>`;
+            });
+
+            const winDiv = document.createElement('div');
+            winDiv.className = 'window hidden';
+            winDiv.id = `win-${folder.id}`;
+            winDiv.style.top = `${10 + (index * 4)}%`; winDiv.style.left = `${15 + (index * 5)}%`;
+            winDiv.style.width = '500px'; winDiv.style.height = '350px';
+            winDiv.innerHTML = `
+                <div class="title-bar">
+                    <div class="title-bar-text">C:\\Desktop\\${folder.name}</div>
+                    <div class="title-bar-controls">
+                        <button onclick="appManager.minimize('${folder.id}')">_</button>
+                        <button onclick="appManager.toggleMax('${folder.id}')">◻</button>
+                        <button onclick="appManager.close('${folder.id}')">X</button>
+                    </div>
+                </div>
+                <div class="window-body">
+                    <div class="content-area">
+                        <div class="media-grid">${mediaGridHtml}</div>
+                    </div>
+                </div>
+            `;
+            windowsContainer.appendChild(winDiv);
+        });
+
+        // 2. Initialize Custom Apps (Link Openers)
+        customApps.forEach((app, index) => {
+            apps[app.id] = { title: `${app.icon} ${app.name}`, open: false, min: false };
+
+            const iconDiv = document.createElement('div');
+            iconDiv.className = 'icon';
+            iconDiv.setAttribute('ondblclick', `appManager.open('${app.id}')`);
+            iconDiv.innerHTML = `<div class="icon-img">${app.icon}</div><div class="icon-text">${app.name}</div>`;
+            iconContainer.appendChild(iconDiv);
+
+            const winDiv = document.createElement('div');
+            winDiv.className = 'window hidden';
+            winDiv.id = `win-${app.id}`;
+            winDiv.style.top = `${12 + (index * 4)}%`; winDiv.style.left = `${20 + (index * 4)}%`;
+            winDiv.style.width = '700px'; winDiv.style.height = '450px';
+            const isGoogleSearch = /^https?:\/\/(www\.)?google\.[a-z.]+\/search/i.test(app.url);
+            const appFrameHtml = isGoogleSearch
+                ? `<div class="browser-frame-wrap crop-google" style="display:block; height:100%;"><iframe src="${app.url}"></iframe></div>`
+                : `<iframe src="${app.url}" style="width:100%; height:100%; border:none;"></iframe>`;
+
+            winDiv.innerHTML = `
+                <div class="title-bar">
+                    <div class="title-bar-text">${app.name}</div>
+                    <div class="title-bar-controls">
+                        <button onclick="appManager.minimize('${app.id}')">_</button>
+                        <button onclick="appManager.toggleMax('${app.id}')">◻</button>
+                        <button onclick="appManager.close('${app.id}')">X</button>
+                    </div>
+                </div>
+                <div class="window-body" style="padding: 0;">
+                    ${appFrameHtml}
+                </div>
+            `;
+            windowsContainer.appendChild(winDiv);
+
+            // Add to start menu right above settings
+            const startItem = document.createElement('div');
+            startItem.className = 'start-item';
+            startItem.setAttribute('onclick', `appManager.open('${app.id}'); toggleStart(false);`);
+            startItem.innerHTML = `${app.icon} ${app.name}`;
+            startMenuItems.insertBefore(startItem, startMenuItems.children[3]);
+        });
+
+        document.querySelectorAll('.window').forEach(win => {
+            win.dataset.defaultTop = win.style.top;
+            win.dataset.defaultLeft = win.style.left;
+        });
+    }
+
+    const appManager = {
+        open(id) {
+            if (!apps[id].open) {
+                apps[id].open = true; apps[id].min = false;
+                const tab = document.createElement('div');
+                tab.className = 'task-tab'; tab.id = 'tab-' + id; tab.innerText = apps[id].title;
+                tab.onclick = () => this.toggleMinimize(id);
+                document.getElementById('task-area').appendChild(tab);
+            } else if (apps[id].min) apps[id].min = false;
+            
+            document.getElementById('win-' + id).classList.remove('hidden');
+            this.focus(id);
+        },
+        close(id) {
+            apps[id].open = false;
+            const win = document.getElementById('win-' + id);
+            
+            win.classList.add('hidden');
+            const tab = document.getElementById('tab-' + id);
+            if (tab) tab.remove();
+
+            win.classList.remove('maximized');
+            if(win.dataset.defaultTop) win.style.top = win.dataset.defaultTop;
+            if(win.dataset.defaultLeft) win.style.left = win.dataset.defaultLeft;
+            
+            const content = win.querySelector('.content-area');
+            if (content && id !== 'browser') content.scrollTop = 0;
+
+            if (id === 'browser') {
+                resetBrowser();
+            } else if (id === 'calc') {
+                calcEvalStr = '';
+                document.getElementById('calc-screen').innerText = '0';
+            } else if (id === 'calendar') {
+                calDate = new Date();
+                renderCalendar();
+            }
+        },
+        minimize(id) {
+            apps[id].min = true;
+            document.getElementById('win-' + id).classList.add('hidden');
+            document.getElementById('tab-' + id).classList.remove('active');
+        },
+        toggleMinimize(id) {
+            if (apps[id].min) this.open(id);
+            else {
+                if (document.getElementById('win-' + id).style.zIndex == zIndexCounter) this.minimize(id);
+                else this.focus(id);
+            }
+        },
+        toggleMax(id) {
+            const win = document.getElementById('win-' + id);
+            win.classList.toggle('maximized');
+            this.focus(id);
+        },
+        focus(id) {
+            zIndexCounter++;
+            document.getElementById('win-' + id).style.zIndex = zIndexCounter;
+            document.querySelectorAll('.task-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.title-bar').forEach(tb => tb.classList.add('inactive'));
+            const tab = document.getElementById('tab-' + id);
+            if (tab) tab.classList.add('active');
+            const titleBar = document.querySelector(`#win-${id} .title-bar`);
+            if (titleBar) titleBar.classList.remove('inactive');
+        }
+    };
+
+    /* ---------------------------------------------------------
+       DRAGGING LOGIC (WITH BOUNDARIES)
+    --------------------------------------------------------- */
+    let isDragging = false, dragTarget = null, startX, startY, initLeft, initTop;
+
+    function attachWindowEvents() {
+        document.querySelectorAll('.window').forEach(win => {
+            win.addEventListener('mousedown', function() {
+                const id = this.id.replace('win-', '');
+                if (apps[id]) appManager.focus(id);
+            });
+        });
+
+        document.querySelectorAll('.title-bar').forEach(tb => {
+            tb.onmousedown = (e) => {
+                if (e.target.tagName === 'BUTTON') return;
+                const win = tb.parentElement;
+                if(win.classList.contains('maximized')) return;
+                isDragging = true; dragTarget = win;
+                startX = e.clientX; startY = e.clientY;
+                initLeft = dragTarget.offsetLeft; initTop = dragTarget.offsetTop;
+            };
+        });
+    }
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging || !dragTarget) return;
+        
+        const desktop = document.getElementById('desktop');
+        let newX = initLeft + (e.clientX - startX);
+        let newY = initTop + (e.clientY - startY);
+        
+        const maxX = desktop.clientWidth - dragTarget.offsetWidth;
+        const maxY = desktop.clientHeight - dragTarget.offsetHeight - 32; 
+
+        if (newX < 0) newX = 0;
+        if (newY < 0) newY = 0;
+        if (newX > maxX) newX = maxX;
+        if (newY > maxY) newY = maxY;
+
+        dragTarget.style.left = newX + 'px';
+        dragTarget.style.top = newY + 'px';
+    });
+    document.addEventListener('mouseup', () => { isDragging = false; dragTarget = null; });
+
+    /* ---------------------------------------------------------
+       START MENU & UI
+    --------------------------------------------------------- */
+    function toggleStart(force) {
+        const menu = document.getElementById('start-menu');
+        const btn = document.getElementById('start-btn');
+        const show = force !== undefined ? force : menu.classList.contains('hidden');
+        menu.classList.toggle('hidden', !show);
+        btn.classList.toggle('active', show);
+    }
+
+    function setWallpaper(value, isImage = false) {
+        const desktop = document.getElementById('desktop');
+        if (isImage) {
+            desktop.style.backgroundImage = `url('${value}')`;
+            desktop.style.backgroundSize = 'cover';
+            desktop.style.backgroundPosition = 'center';
+            desktop.style.backgroundRepeat = 'no-repeat';
+        } else {
+            desktop.style.backgroundImage = 'none';
+            desktop.style.backgroundColor = value;
+        }
+    }
+
+    // Paste the destination URL between the quotes below (e.g. "https://your-game-site.com/level2")
+    const SHUTDOWN_REDIRECT_URL = "";
+
+    function shutdownSystem() {
+        toggleStart(false);
+        const screen = document.getElementById('shutdown-screen');
+        screen.classList.remove('hidden');
+        screen.innerHTML = "Shutting down...";
+        setTimeout(() => {
+            screen.innerHTML = "It is now safe to turn off your computer.";
+            setTimeout(() => {
+                if (SHUTDOWN_REDIRECT_URL) {
+                    window.location.href = SHUTDOWN_REDIRECT_URL;
+                } else {
+                    console.warn('SHUTDOWN_REDIRECT_URL is empty — set it near the top of the shutdown logic.');
+                }
+            }, 1500);
+        }, 2000);
+    }
+
+    /* ---------------------------------------------------------
+       TOOLTIPS
+    --------------------------------------------------------- */
+    function showTooltip(text, element) {
+        const tooltip = document.getElementById('taskbar-tooltip');
+        tooltip.innerText = text;
+        const rect = element.getBoundingClientRect();
+        tooltip.style.left = rect.left + 'px';
+        tooltip.classList.remove('hidden');
+    }
+    function hideTooltip() { document.getElementById('taskbar-tooltip').classList.add('hidden'); }
+
+    /* ---------------------------------------------------------
+       ADVANCED BROWSER LOGIC (TABS & HISTORY)
+    --------------------------------------------------------- */
+    let browserTabs = [];
+    let activeTabId = null;
+    let tabCounter = 0;
+
+    function renderBrowserTabs() {
+        const container = document.getElementById('browser-tabs-container');
+        container.innerHTML = '';
+        
+        browserTabs.forEach(tab => {
+            const t = document.createElement('div');
+            t.className = 'browser-tab' + (tab.id === activeTabId ? ' active' : '');
+            t.innerText = tab.title;
+            t.onclick = () => switchTab(tab.id);
+            container.appendChild(t);
+        });
+
+        const addBtn = document.createElement('button');
+        addBtn.className = 'add-tab-btn';
+        addBtn.innerText = '+';
+        addBtn.onclick = addNewTab;
+        container.appendChild(addBtn);
+    }
+
+    function addNewTab() {
+        tabCounter++;
+        const contentArea = document.getElementById('browser-content-area');
+        
+        const startPage = document.createElement('div');
+        startPage.style.cssText = 'flex: 1; display: flex; align-items: center; justify-content: center; background: #fff; color: #000; font-size: 24px; font-weight: bold; width:100%; height:100%; display:none;';
+        startPage.innerText = 'Welcome to the Internet!';
+        
+        const frameWrap = document.createElement('div');
+        frameWrap.className = 'browser-frame-wrap';
+
+        const iframe = document.createElement('iframe');
+        frameWrap.appendChild(iframe);
+
+        contentArea.appendChild(startPage);
+        contentArea.appendChild(frameWrap);
+
+        browserTabs.push({ 
+            id: tabCounter, 
+            title: 'New Tab', 
+            url: '', 
+            startPage: startPage, 
+            iframe: iframe,
+            frameWrap: frameWrap,
+            history: [''],
+            historyIndex: 0
+        });
+        
+        switchTab(tabCounter);
+    }
+
+    function switchTab(id) {
+        activeTabId = id;
+        
+        browserTabs.forEach(tab => {
+            const isActive = (tab.id === id);
+            if (tab.startPage) tab.startPage.style.display = (isActive && !tab.url) ? 'flex' : 'none';
+            if (tab.frameWrap) tab.frameWrap.style.display = (isActive && tab.url) ? 'block' : 'none';
+        });
+
+        const currentTab = browserTabs.find(t => t.id === id);
+        document.getElementById('browser-url').value = currentTab ? currentTab.url : '';
+        renderBrowserTabs();
+    }
+
+    function navigateBrowser() {
+        const input = document.getElementById('browser-url').value.trim();
+        const tab = browserTabs.find(t => t.id === activeTabId);
+        if (!tab) return;
+        
+        let url = input;
+        if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'https://www.google.com/search?igu=1&q=' + encodeURIComponent(url);
+        }
+
+        tab.history = tab.history.slice(0, tab.historyIndex + 1);
+        tab.history.push(url);
+        tab.historyIndex++;
+
+        applyUrlToTab(tab, url);
+    }
+
+    function browserBack() {
+        const tab = browserTabs.find(t => t.id === activeTabId);
+        if (!tab) return;
+        if (tab.historyIndex > 0) {
+            tab.historyIndex--;
+            const targetUrl = tab.history[tab.historyIndex];
+            applyUrlToTab(tab, targetUrl);
+        }
+    }
+
+    function applyUrlToTab(tab, url) {
+        tab.url = url;
+        document.getElementById('browser-url').value = url;
+
+        if (!url) {
+            tab.title = 'New Tab';
+            if (tab.frameWrap) tab.frameWrap.style.display = 'none';
+            if (tab.startPage) tab.startPage.style.display = 'flex';
+        } else {
+            tab.title = url.length > 12 ? url.substring(0, 12) + '...' : url;
+            if (tab.startPage) tab.startPage.style.display = 'none';
+            if (tab.frameWrap) {
+                tab.frameWrap.style.display = 'block';
+
+                const isGoogleSearch = /^https?:\/\/(www\.)?google\.[a-z.]+\/search/i.test(url);
+                tab.frameWrap.classList.toggle('crop-google', isGoogleSearch);
+
+                if (tab.iframe.src !== url) {
+                    tab.iframe.src = url;
+                }
+            }
+        }
+        renderBrowserTabs();
+    }
+
+    function resetBrowser() {
+        const contentArea = document.getElementById('browser-content-area');
+        contentArea.innerHTML = '';
+        browserTabs = [];
+        tabCounter = 0;
+        document.getElementById('browser-url').value = '';
+        addNewTab();
+    }
+
+    /* ---------------------------------------------------------
+       ADVANCED CALCULATOR
+    --------------------------------------------------------- */
+    let calcEvalStr = '';
+    function calcPress(val) {
+        const disp = document.getElementById('calc-screen');
+        if (val === 'C') { calcEvalStr = ''; disp.innerText = '0'; } 
+        else if (val === '=') { 
+            try { 
+                let result = eval(calcEvalStr);
+                if(result % 1 !== 0) result = result.toFixed(4);
+                calcEvalStr = result.toString(); disp.innerText = calcEvalStr; 
+            } catch(e) { disp.innerText = 'Error'; calcEvalStr = ''; } 
+        } else { 
+            calcEvalStr += val; disp.innerText = calcEvalStr; 
+        }
+    }
+
+    /* ---------------------------------------------------------
+       CLOCK & CALENDAR
+    --------------------------------------------------------- */
+    function updateClocks() {
+        const now = new Date();
+        let h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12; m = m < 10 ? '0' + m : m; s = s < 10 ? '0' + s : s;
+        document.getElementById('sys-clock').innerText = `${h}:${m} ${ampm}`;
+        document.getElementById('large-clock').innerText = `${h}:${m}:${s} ${ampm}`;
+    }
+    setInterval(updateClocks, 1000); updateClocks();
+
+    let calDate = new Date();
+    function renderCalendar() {
+        const year = calDate.getFullYear(), month = calDate.getMonth(), today = new Date();
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        document.getElementById('cal-month-year').innerText = `${monthNames[month]} ${year}`;
+        const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate();
+        const grid = document.getElementById('cal-grid'); grid.innerHTML = '';
+        ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].forEach(d => {
+            grid.innerHTML += `<div class="cal-day-name">${d}</div>`;
+        });
+        for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="cal-day" style="background:#c0c0c0; border-color:#c0c0c0;"></div>`;
+        for (let i = 1; i <= daysInMonth; i++) {
+            const isToday = (year === today.getFullYear() && month === today.getMonth() && i === today.getDate());
+            grid.innerHTML += `<div class="cal-day ${isToday ? 'today' : ''}">${i}</div>`;
+        }
+    }
+    function changeMonth(dir) { calDate.setMonth(calDate.getMonth() + dir); renderCalendar(); }
+
+    // Init Calls
+    initDesktopApps(); 
+    attachWindowEvents(); 
+    renderCalendar(); 
+    resetBrowser();
+    setWallpaper('background.png', true); // Sets background.png as the default desktop wallpaper
+</script>
+</body>
+</html>
